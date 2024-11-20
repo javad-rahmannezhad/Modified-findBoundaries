@@ -112,6 +112,8 @@ function elements = findBoundaries(vmcmesh, querystring, varargin)
                 normal = normal/norm(normal);
                 binormal = cross(tangent, normal);
                 binormal = binormal / norm(binormal);
+                trinormal = cross(tangent, binormal);
+                trinormal = trinormal / norm(trinormal);
                 steps=10;
                 for i=1:steps
                     points(i,:) = [radius*cos(2*pi/steps * i) radius*sin(2*pi/steps * i)];
@@ -128,15 +130,18 @@ function elements = findBoundaries(vmcmesh, querystring, varargin)
             transformed_points = [];
             
             for  i=1:size(points,1)
-                    newpoint = origin+points(i,1)*normal + points(i,2)*binormal;
+                    %newpoint = origin+points(i,1)*normal + points(i,2)*binormal;
+                    newpoint = origin+radius*cos(2*pi/steps * i)*binormal + points(i,2)*trinormal;
                     transformed_points = [transformed_points; newpoint];
             end
             for  i=1:size(points,1)
-                    newpoint = origin+points(i,1)*normal + points(i,2)*binormal + norm(dir)*tangent;
+                    %newpoint = origin+points(i,1)*binormal + points(i,2)*binormal + norm(dir)*tangent;
+                    newpoint = waypoint+radius*cos(2*pi/steps * i)*binormal + points(i,2)*trinormal;
                     transformed_points = [transformed_points; newpoint];   
             end
             
             DT = delaunayTriangulation(transformed_points);
+            tetramesh(DT,'FaceAlpha',0.3);
 
             firstcorner = isnan(pointLocation(DT, vmcmesh.r(vmcmesh.BH(:,1),:)));
             secondcorner = isnan(pointLocation(DT, vmcmesh.r(vmcmesh.BH(:,2),:))); 
